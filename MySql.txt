@@ -1,1 +1,310 @@
-my name is arnab
+Basic SQL question (Udemy assingments )
+
+
+
+
+SET I
+========================================================================================================================================
+
+-- Creating the Employees table
+CREATE TABLE Employees (
+    EmployeeID INT PRIMARY KEY,
+    FirstName NVARCHAR(50),
+    LastName NVARCHAR(50),
+    Email NVARCHAR(100) UNIQUE,
+    DepartmentID INT,
+    HireDate DATE,
+    Salary DECIMAL(10, 2)
+);
+
+-- Creating the Departments table
+CREATE TABLE Departments (
+    DepartmentID INT PRIMARY KEY,
+    DepartmentName NVARCHAR(100)
+);
+
+
+-- Inserting data into the Employees table
+INSERT INTO Employees (EmployeeID, FirstName, LastName, Email, DepartmentID, HireDate, Salary)
+VALUES 
+(1, 'John', 'Smith', 'john.smith@example.com', 101, '2021-06-15', 75000.00),
+(2, 'Jane', 'Doe', 'jane.doe@example.com', 102, '2020-03-10', 85000.00),
+(3, 'Michael', 'Johnson', 'michael.johnson@example.com', 101, '2019-11-22', 95000.00),
+(4, 'Emily', 'Davis', 'emily.davis@example.com', 103, '2022-01-05', 68000.00),
+(5, 'William', 'Brown', 'william.brown@example.com', 102, '2018-07-19', 80000.00);
+
+-- Inserting data into the Departments table
+INSERT INTO Departments (DepartmentID, DepartmentName)
+VALUES
+(101, 'Human Resources'),
+(102, 'Finance'),
+(103, 'IT');
+
+
+
+
+
+
+
+
+1) Write a SQL query to find the names of employees who have a salary higher than the average salary of all employees.
+
+ans) select firstname from employees where salary > (select avg(salary) from employees)
+
+2) Write a SQL query to list the employee names and their departments for employees who were hired after the oldest employee in the company.
+
+ans) select FirstName , departmentid from employees where hiredate >(select min(hiredate) from employees)
+
+3) Write a SQL query to find the details of the employee(s) with the highest salary.
+
+ans) select * from employees where salary =(select max(salary) from employees)
+
+4) Write a SQL query to find the names of employees who work in the same department as 'John Smith'.
+
+ans) select firstname,lastname from employees where departmentid =(select departmentid from employees where firstname='John' and lastname='smith') and firstname !='John'
+
+5) Write a SQL query to find the names of employees who do not belong to the department with the highest average salary.
+
+ans)select firstname as employ from employees where departmentid !=(select departmentid from(
+
+select
+
+departmentid,avg(salary) as higest_avg from employees
+
+group by departmentid
+
+order by higest_avg desc
+
+limit 1) t)
+
+
+6) Write a SQL query to find the names of employees whose first names start with the letter 'J'.
+
+ans) select firstname from employees where firstname LIKE 'J%'
+
+
+
+7) Write a SQL query to find the names of employees whose last names end with the letter 'n'.
+
+ans) select firstname from employees where firstname LIKE '%john%'
+
+
+
+8) Write a SQL query to find the email addresses of employees that contain the word "john".
+
+ans) select email from employees where email LIKE '%john%'
+
+
+
+9) Write a SQL query to find the names of employees whose first names have exactly 5 characters.
+
+ans) select firstname from employees where CHAR_LENGTH(firstname)=5
+
+
+
+10) Write a SQL query to find the names of employees whose last names contain the letter 'a' as the second character.
+
+ans) SELECT lastname
+
+FROM employees
+
+WHERE lastname LIKE '_a%';
+
+
+
+11) Write a SQL query to list the names of employees along with the names of the departments they work in.
+
+ans) select firstname,departmentname from employees as e inner join departments as d on d.departmentid=e.departmentid
+
+
+
+
+
+12) Write a SQL query to list all the departments and the employees working in them, including departments with no employees.
+
+ans) select firstname,departmentname from employees as e right join departments as d on d.departmentid=e.departmentid
+
+
+
+13) Write a SQL query to find the names of employees who do not belong to any department (i.e., no matching department ID).
+
+ans) select firstname from employees as e join departments as d on d.departmentid=e.departmentid where e.departmentid is null
+
+
+
+14) Write a SQL query to list the names of employees who work in the same department as 'Jane Doe'.
+
+ans) select firstname from employees as e join departments as d on d.departmentid=e.departmentid
+
+where e.departmentid =
+
+( select e.departmentid from employees as e join departments as d on d.departmentid=e.departmentid where e.firstname='Jane' and e.lastname='Doe')
+
+and e.firstname !='Jane'
+
+
+15) Write a SQL query to find the department with the highest total salary paid to its employees.
+
+ans) select departmentname as Department_Name from (select departmentname, sum(salary) as total_sum from employees as e left join departments as d on d.departmentid=e.departmentid
+
+group by d.departmentid
+
+order by total_sum desc
+
+limit 1)t
+
+
+==========================================================================================================================
+
+SET II
+
+
+create database SQL_Questions;
+
+use SQL_Questions;
+
+-- Create the Customers table
+CREATE TABLE Customers (
+    CustomerID INT PRIMARY KEY,
+    CustomerName VARCHAR(50),
+    Country VARCHAR(50)
+);
+
+-- Insert data into Customers table
+INSERT INTO Customers (CustomerID, CustomerName, Country)
+VALUES 
+(1, 'Alice', 'USA'),
+(2, 'Bob', 'UK'),
+(3, 'Charlie', 'Canada'),
+(4, 'David', 'USA'),
+(5, 'Eve', 'Australia');
+
+-- Create the Orders table
+CREATE TABLE Orders (
+    OrderID INT PRIMARY KEY,
+    CustomerID INT,
+    OrderDate DATE,
+    ProductID INT,
+    FOREIGN KEY (CustomerID) REFERENCES Customers(CustomerID)
+);
+
+-- Insert data into Orders table
+INSERT INTO Orders (OrderID, CustomerID, OrderDate, ProductID)
+VALUES 
+(101, 1, '2024-08-01', 1001),
+(102, 1, '2024-08-03', 1002),
+(103, 2, '2024-08-04', 1001),
+(104, 3, '2024-08-05', 1003),
+(105, 5, '2024-08-06', 1004);
+
+-- Create the Products table
+CREATE TABLE Products (
+    ProductID INT PRIMARY KEY,
+    ProductName VARCHAR(50),
+    Price DECIMAL(10, 2)
+);
+
+-- Insert data into Products table
+INSERT INTO Products (ProductID, ProductName, Price)
+VALUES 
+(1001, 'Laptop', 1000),
+(1002, 'Smartphone', 700),
+(1003, 'Tablet', 500),
+(1004, 'Headphones', 200),
+(1005, 'Smartwatch', 300);
+
+
+
+
+select * from Customers;
+
+select * from Orders;
+
+select * from Products;
+
+/*1) Write an SQL query to find the names of customers who have placed an order.*/
+
+select distinct CustomerName from Customers as c inner join Orders as o on c.CustomerID = o.CustomerID;
+
+/*2) Find the list of customers who have not placed any orders.*/
+
+select CustomerName from Customers as c left join Orders as o on c.CustomerID = o.CustomerID WHERE o.OrderID is null;
+
+/*--3) List all orders along with the product name and price.*/
+
+select * FROM orders as o join products as p on o.productid=p.productid;
+
+/*--4) Find the names of customers and their orders, including customers who haven't placed any orders.*/
+
+select CustomerName,OrderID from customers as c left join orders as o on c.CustomerID=o.customerID;
+
+/*--5) Retrieve a list of products that have never been ordered.*/
+
+select Productname from products as p left join orders as o on p.productid=o.productid where orderid is null;
+
+/*--6) Find the total number of orders placed by each customer.*/
+
+SELECT c.customername, COUNT(ORDERID) as total_orders FROM ORDERS AS O right join customers as c on o.customerid=c.customerid group by c.customername
+order by total_orders;
+
+
+/*--7) Display the customers, the products they've ordered, and the order date. Include customers who haven't placed any orders.*/
+
+select distinct CustomerName,p.ProductID,ProductName,OrderDate
+from Customers c left join Orders o on c.CustomerID = o.CustomerID left join Products p on o.ProductID = p.ProductID ;
+
+
+/*-- 8) Identify pairs of customers who live in the same country*/
+
+
+
+select * from customers;
+SELECT country,
+       GROUP_CONCAT(customername ORDER BY customername) AS customers
+FROM customers
+GROUP BY country;
+
+/*9) Find the customer who has spent the most on their orders
+*/
+
+select customername from
+(select customername,sum(price) ,dense_rank() over(order by sum(price) desc) as dr from Customers c left join Orders o on c.CustomerID = o.CustomerID left join Products p on o.ProductID = p.ProductID 
+group by c.customername) m where dr=1;
+
+
+/*10) Find customers who have ordered more than one type of products*/
+
+	select customername as cu_name from
+    (select c.customername,count(productid) as Number_of_orders from orders as o inner join customers as c on o.customerid=c.customerid
+	group by c.customerid
+	order by number_of_orders desc
+	limit 1) t;
+/* 11) List all products and their corresponding orders, using a RIGHT JOIN, including products that have never been ordered.*/
+
+select productname,orderid from orders as o right join products as p on o.productid=p.productid;
+
+
+/* 12) Retrieve all orders placed by customers fron the USA.*/
+
+select orderid from customers as c join orders as o on c.customerid=o.customerid
+where country like 'USA' ; 
+
+/*13) Find the names of customers who have ordered a product priced above $500.*/
+
+select distinct customername from customers as c inner join orders as o on c.customerid=o.customerid right join products as p on o.productid=p.productid 
+where price>500;
+
+/* 14) Find customers who have ordered the same product more than once.*/
+
+select customername from (select c.customername from customers as c inner join orders as o on c.customerid=o.customerid  
+group by  c.customername,o.productid
+having count(*)>1) t
+
+
+
+
+
+
+
+
+
