@@ -301,6 +301,166 @@ group by  c.customername,o.productid
 having count(*)>1) t
 
 
+====================================================================================================================================
+
+Set III : Dense_Rank and Partition By
+
+
+drop table employees;
+
+CREATE TABLE Employees (
+    EmpID INT PRIMARY KEY,
+    EmpName VARCHAR(50),
+    Gender VARCHAR(10),
+    Age INT,
+    DepartmentID INT,
+    Salary INT,
+    HireDate DATE
+);
+
+INSERT INTO Employees VALUES
+(1, 'Amit Sharma', 'Male', 28, 101, 45000, '2021-03-15'),
+(2, 'Neha Verma', 'Female', 32, 102, 60000, '2019-07-10'),
+(3, 'Rahul Singh', 'Male', 45, 101, 85000, '2015-01-20'),
+(4, 'Priya Das', 'Female', 26, 103, 40000, '2022-06-01'),
+(5, 'Ankit Patel', 'Male', 38, 104, 75000, '2018-11-05'),
+(6, 'Sneha Roy', 'Female', 29, 102, 52000, '2020-09-12'),
+(7, 'Vikas Gupta', 'Male', 41, 101, 90000, '2014-12-30'),
+(8, 'Pooja Mehta', 'Female', 35, 104, 68000, '2017-08-18'),
+(9, 'Rohit Kumar', 'Male', 24, 103, 38000, '2023-02-25'),
+(10, 'Kavita Joshi', 'Female', 48, 102, 95000, '2012-04-09'),
+(11, 'Kav Joshi', 'male', 48, 102, 95000, '2012-04-09');
+
+
+drop table Departments;
+
+CREATE TABLE Departments (
+    DepartmentID INT PRIMARY KEY,
+    DepartmentName VARCHAR(50),
+    Location VARCHAR(50)
+);
+
+INSERT INTO Departments VALUES
+(101, 'IT', 'Bangalore'),
+(102, 'HR', 'Mumbai'),
+(103, 'Finance', 'Delhi'),
+(104, 'Sales', 'Pune');
+
+
+
+CREATE TABLE Projects (
+    ProjectID INT PRIMARY KEY,
+    ProjectName VARCHAR(50),
+    DepartmentID INT,
+    Budget INT
+);
+
+INSERT INTO Projects VALUES
+(201, 'ERP System', 101, 500000),
+(202, 'Recruitment Drive', 102, 200000),
+(203, 'Budget Analysis', 103, 300000),
+(204, 'Sales Campaign', 104, 400000);
+
+
+CREATE TABLE Employee_Projects (
+    EmpID INT,
+    ProjectID INT,
+    HoursWorked INT,
+    PRIMARY KEY (EmpID, ProjectID)
+);
+
+INSERT INTO Employee_Projects VALUES
+(1, 201, 120),
+(3, 201, 200),
+(7, 201, 180),
+(2, 202, 90),
+(6, 202, 110),
+(4, 203, 75),
+(9, 203, 60),
+(5, 204, 160),
+(8, 204, 140);
+
+
+/*List all employees with salary > 60,000*/
+
+select * from(select *,dense_rank() over(order by salary desc)
+from employees)t
+where salary>60000;
+
+
+/*Show employees hired after 2020*/
+
+select * from(select * , dense_rank() over(order by HireDate desc) from employees)t
+where year(HireDate)>2020;
+
+/*Find distinct departments*/
+
+select distinct Departmentname FROM employees as e inner join departments as d on e.departmentid= d.DepartmentID;
+
+
+/*Find the highest-paid employee(s) in each department.*/
+
+select *from(select e.*,d.DepartmentName,dense_rank() over(partition by d.departmentname order by e.salary desc)  as rnk from employees as e left join departments as d on d.departmentid=e.departmentid )t
+where rnk =1;
+
+/*Find the second highest salary in each department.*/
+
+select * from (select e.*,d.departmentname,dense_rank() over(partition by d.departmentname order by e.salary desc) as rnk from employees as e left join departments as d on d.departmentid =e.departmentid)t
+where rnk=2;
+
+/*Show employees whose salary rank ≤ 3 in their department.*/
+
+select* from(select e.*,d.departmentname ,dense_rank() over(partition by d.departmentname order by e.salary desc) as rnk from employees as e left join departments as d on d.DepartmentID=e.departmentid)t 
+where rnk<=3;
+
+/*Find employees who earn the second highest salary overall.*/
+
+	select* from(select e.*,d.departmentname,dense_rank() 
+	over(order by e.salary desc) as rnk from employees as e left join departments as d on e.DepartmentID=d.DepartmentID) t where rnk=2;
+
+/*8️⃣ Find employees who earn the third highest salary overall.*/
+
+
+select* from(select e.*,d.departmentname,dense_rank() 
+over(order by e.salary desc) as rnk from employees as e left join departments as d on e.DepartmentID=d.DepartmentID) t where rnk=3;
+
+
+/*1️⃣1️⃣ Display employees whose dense rank is 1 (top salary holders).*/
+
+select* from(select e.*,d.departmentname,dense_rank() 
+	over(order by e.salary desc) as rnk from employees as e left join departments as d on e.DepartmentID=d.DepartmentID) t where rnk=1;
+
+/*1️⃣2️⃣ Display employees whose dense rank is between 2 and 3.*/
+
+select * from(select e.*,dense_rank() over(order by e.salary desc) as rnk from employees as e left join departments as d on e.DepartmentID=d.departmentid)t
+where rnk>=2 and rnk<=3;
+
+/*1️⃣3️⃣ Rank employees by HireDate (oldest employee = rank 1).*/
+
+select e.*,dense_rank() over(order by hiredate) from employees as e left join departments as d on e.DepartmentID=d.departmentid;
+
+/*1️⃣4️⃣ Rank employees by Age (youngest first).*/
+
+select e.*,dense_rank() over(order by hiredate DESC) from employees as e left join departments as d on e.DepartmentID=d.departmentid;
+
+/*1️⃣5️⃣ Rank employees by salary within each gender.*/
+
+select e.* ,dense_rank() over(partition by gender order by e.salary) from employees as e left join departments as d on e.DepartmentID=d.departmentid;
+
+
+/*1️⃣6️⃣ Find the top 2 highest-paid males and females separately.*/
+
+select * from(select e.* ,dense_rank() over(partition by gender order by e.salary desc) as rnk
+from employees as e left join departments as d on e.DepartmentID=d.departmentid)t
+where rnk=2;
+
+
+
+
+
+
+==============================================
+
 
 
 
